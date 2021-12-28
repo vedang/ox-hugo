@@ -1716,6 +1716,7 @@ The kdb wrapping is done if `org-hugo-use-code-for-kbd' is non-nil.
 
 CONTENTS is nil.  INFO is a plist used as a communication
 channel."
+  ;; (message "[org-hugo-kbd-tags-maybe DBG] %s" verbatim)
   (if (org-hugo--plist-get-true-p info :hugo-use-code-for-kbd)
       (format "<kbd>%s</kbd>" (org-element-property :value verbatim))
     (org-md-verbatim verbatim nil nil)))
@@ -1736,6 +1737,7 @@ created.
 
 CONTENTS is nil.  INFO is a plist holding contextual
 information."
+  ;; (message "[org-hugo-example-block DBG] %s" example-block)
   (let (;; See `org-element-example-block-parser' for all EXAMPLE-BLOCK properties.
         (number-lines (org-element-property :number-lines example-block)) ;Non-nil if -n or +n switch is used
         ret)
@@ -1770,6 +1772,7 @@ backend.
 Export snippets with backend tags \"markdown:\" and \"md:\" are
 also handled.  Exporting of export snippets with backend tag
 \"html:\" uses the HTML exporter."
+  ;; (message "[org-hugo-export-snippet DBG] %s" export-snippet)
   (cond
    ((member (org-export-snippet-backend export-snippet) '(hugo markdown md))
     ;; ox-md.el does not support export snippets, so let's handle
@@ -1795,6 +1798,7 @@ backend.
 
 If the backend tag is \"markdown\"/\"md\" or \"html\", exporting
 of those blocks falls back to the respective exporters."
+  ;; (message "[org-hugo-export-block DBG] %s" export-block)
   (cond
    ((string= (org-element-property :type export-block) "HUGO")
     (org-remove-indentation (org-element-property :value export-block)))
@@ -1808,6 +1812,8 @@ of those blocks falls back to the respective exporters."
   "Transcode HEADLINE element into Markdown format.
 CONTENTS is the headline contents.  INFO is a plist used as
 a communication channel."
+  ;; (message "[ox-hugo-headline DBG] %s %s %s" headline contents info)
+  ;; (message "[org-hugo-headline DBG] %s" (org-element-property :title headline))
   (unless (org-element-property :footnote-section-p headline)
     (let* ((numbers (org-hugo--get-headline-number headline info nil))
            (loffset (string-to-number (plist-get info :hugo-level-offset))) ;"" -> 0, "0" -> 0, "1" -> 1, ..
@@ -1990,6 +1996,8 @@ containing the TITLE's number."
   "Return body of document after converting it to Hugo-compatible Markdown.
 CONTENTS is the transcoded contents string.  INFO is a plist
 holding export options."
+  ;; (message "[ox-hugo-inner-template DBG] %s %s" contents info)
+  ;; (message "[org-hugo-inner-template DBG]")
   (let* ((toc-level (plist-get info :with-toc))
          (toc-level (if (and toc-level
                              (not (wholenump toc-level)))
@@ -2014,6 +2022,7 @@ holding export options."
   "Transcode a KEYWORD element into Hugo-compatible Markdown format.
 CONTENTS is nil.  INFO is a plist used as a communication
 channel."
+  ;; (message "[ox-hugo-keyword DBG] %s" keyword)
   (let ((kwd (org-element-property :key keyword))
         (value (org-element-property :value keyword)))
     (cond
@@ -2049,6 +2058,7 @@ INFO is a plist used as a communication channel.
 
 Unlike `org-md-link', this function will also copy local images
 and rewrite link paths to make blogging more seamless."
+  ;; (message "[ox-hugo-link DBG] %s %s" link desc)
   (let* ((raw-link (org-element-property :raw-link link))
          (raw-path (org-element-property :path link))
          (type (org-element-property :type link))
@@ -2149,7 +2159,7 @@ and rewrite link paths to make blogging more seamless."
              (caption (or
                        ;; Caption set using #+caption takes higher precedence.
                        (org-string-nw-p
-                        (org-export-data  ;Look for caption set using #+caption
+                        (org-export-data ;Look for caption set using #+caption
                          (org-export-get-caption (org-export-get-parent-element link))
                          info))
                        (plist-get attr :caption)))
@@ -2238,7 +2248,7 @@ and rewrite link paths to make blogging more seamless."
               (plist-put attr :target nil)
               (plist-put attr :rel nil)
               (org-html--format-image source attr info))
-             (t ;Else use the Hugo `figure' shortcode.
+             (t           ;Else use the Hugo `figure' shortcode.
               ;; Hugo `figure' shortcode named parameters.
               ;; https://gohugo.io/content-management/shortcodes/#figure
               (let ((figure-params `((src . ,source)
@@ -2541,6 +2551,8 @@ INFO is a plist used as a communication channel."
   "Transcode PARAGRAPH element into Hugo Markdown format.
 CONTENTS is the paragraph contents.  INFO is a plist used as a
 communication channel."
+  ;; (message "[ox-hugo-paragraph DBG] %s %s %s" paragraph contents info)
+  ;; (message "[ox-hugo-paragraph DBG] %s" paragraph)
   (let (;; The label is mainly for paragraphs that are standalone
         ;; images with #+name keyword.
         (label (let ((lbl (and (org-element-property :name paragraph)
@@ -2629,6 +2641,7 @@ Hugo \"highlight\" shortcode features:
 
 CONTENTS is nil.  INFO is a plist used as a communication
 channel."
+  ;; (message "[org-hugo-src-block DBG] %s" src-block)
   (let* ((lang (org-element-property :language src-block))
          (parameters-str (org-element-property :parameters src-block))
          (parameters (org-babel-parse-header-arguments parameters-str))
@@ -2776,6 +2789,7 @@ For all other special blocks, processing is passed on to
 `org-blackfriday-special-block'.
 
 INFO is a plist holding export options."
+  ;; (message "[org-hugo-special-block DBG] %s" special-block)
   (let ((block-type (org-element-property :type special-block))
         (paired-shortcodes (let* ((str (plist-get info :hugo-paired-shortcodes))
                                   (str-list (when (org-string-nw-p str)
@@ -2847,6 +2861,7 @@ INFO is a plist holding export options."
 
 BODY is the result of the export.
 INFO is a plist holding export options."
+  ;; (message "[ox-hugo-body-filter DBG] %s" body)
   ;; Copy the page resources to the bundle directory.
   (org-hugo--maybe-copy-resources info)
   ;; (message "[ox-hugo body filter] ITEM %S" (org-entry-get (point) "ITEM"))
@@ -2882,14 +2897,14 @@ INFO is a plist holding export options."
                 (widen)
                 (ignore-errors ;If the point is at beginning of buffer even after widening
                   (backward-char))
-                ;; (message "[body filter DBG] line at pt: %s" (thing-at-point 'line))
+                ;; (message "[ox-hugo body filter DBG] line at pt: %s" (thing-at-point 'line))
                 (org-hugo--get-front-matter info))))
         (fm-extra (plist-get info :fm-extra))
         (body (if (org-string-nw-p body) ;Insert extra newline if body is non-empty
                   (format "\n%s" body)
                 "")))
-    ;; (message "[body filter DBG fm] %S" fm)
-    ;; (message "[body filter DBG fm-extra] %S" fm-extra)
+    ;; (message "[ox-hugo body filter DBG fm] %S" fm)
+    ;; (message "[ox-hugo body filter DBG fm-extra] %S" fm-extra)
     (when fm-extra
       ;; If fm-extra is present, append it to the end of the
       ;; front-matter, before the closing "+++" or "---" marker.
@@ -3267,7 +3282,13 @@ the Hugo front-matter."
   "Return the Hugo front-matter string.
 
 INFO is a plist used as a communication channel."
-  ;; (message "[hugo front-matter DBG] info: %S" (pp info))
+  ;; (message "[org-hugo front-matter DBG] Printing Info Starting")
+  ;; (message "[org-hugo front-matter DBG] Title: %s %s %s"
+  ;;          (org-hugo--get-sanitized-title info)
+  ;;          (plist-get info :with-title)
+  ;;          (plist-get info :title))
+  ;; (pp info)
+  ;; (message "[org-hugo front-matter DBG] Printing Info Complete")
   (let* ((fm-format (plist-get info :hugo-front-matter-format))
          (author-list (and (plist-get info :with-author)
                            (let ((author-raw
@@ -3432,17 +3453,16 @@ INFO is a plist used as a communication channel."
          (data `,(append data weight-data custom-fm-data))
          ret)
     ;; (message "[get fm DBG] tags: %s" tags)
-    ;; (message "dbg: hugo tags: %S" (plist-get info :hugo-tags))
+    ;; (message "[get fm DBG] hugo tags: %S" (plist-get info :hugo-tags))
     ;; (message "[get fm info DBG] %S" info)
     ;; (message "[get fm blackfriday DBG] %S" blackfriday)
     ;; (message "[get fm menu DBG] %S" menu-alist)
     ;; (message "[get fm menu override DBG] %S" menu-alist-override)
-    ;; (message "[custom fm data DBG] %S" custom-fm-data)
-    ;; (message "[fm resources OUT DBG] %S" resources)
-    ;; (message "[fm data DBG] %S" data)
-    ;; (message "[fm tags DBG] %S" tags)
-    ;; (message "[fm categories DBG] %S" categories)
-    ;; (message "[fm keywords DBG] %S" keywords)
+    ;; (message "[get fm custom data DBG] %S" custom-fm-data)
+    ;; (message "[get fm resources OUT DBG] %S" resources)
+    ;; (message "[get fm data DBG] %S" data)
+    ;; (message "[get fm categories DBG] %S" categories)
+    ;; (message "[get fm keywords DBG] %S" keywords)
     (setq data (org-hugo--replace-keys-maybe data info))
     (setq ret (org-hugo--gen-front-matter data fm-format))
     (if (and (string= "toml" fm-format)
@@ -3910,8 +3930,8 @@ subtree-number being exported.
                (exclude-tags (plist-get info :exclude-tags))
                (is-commented (org-element-property :commentedp subtree))
                is-excluded matched-exclude-tag ret)
-          ;; (message "[org-hugo--export-subtree-to-md DBG] exclude-tags =
-          ;; %s" exclude-tags)
+          ;; (message "[org-hugo--export-subtree-to-md DBG] exclude-tags = %s"
+          ;;          exclude-tags)
           (let ((all-tags (let ((org-use-tag-inheritance t))
                             (org-hugo--get-tags))))
             (when all-tags
@@ -3921,8 +3941,8 @@ subtree-number being exported.
                   (setq is-excluded t)))))
 
           ;; (message "[current subtree DBG] subtree: %S" subtree)
-          ;; (message "[current subtree DBG] is-commented:%S, tags:%S,
-          ;; is-excluded:%S" is-commented tags is-excluded)
+          ;; (message "[current subtree DBG] is-commented:%S, tags:%S, is-excluded:%S"
+          ;;          is-commented tags is-excluded)
           (let ((title (org-element-property :title subtree)))
             (cond
              (is-commented
@@ -4199,6 +4219,8 @@ contents of hidden elements.
 
 Return output file's name."
   (interactive)
+  (message "[org-hugo-export-to-md DBG] Starting %s %s %s"
+           async subtreep visible-only)
   (org-hugo--before-export-function subtreep)
   ;; Allow certain `ox-hugo' properties to be inherited.  It is
   ;; important to set the `org-use-property-inheritance' before
